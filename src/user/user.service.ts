@@ -5,6 +5,8 @@ import { UpdateUserDto } from './dto/update-user.dto';
 @Injectable()
 export class UserService {
   create(createUserDto: CreateUserDto) {
+    // 利用typeorm 写入数据库
+    
     return 'This action adds a new user';
   }
 
