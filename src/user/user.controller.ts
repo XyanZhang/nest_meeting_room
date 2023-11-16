@@ -9,16 +9,15 @@ export class UserController {
   constructor(private readonly userService: UserService) {}
 
   @Post('/register')
-  register(@Body() createUserDto: RegisterUserDto) {
-    console.log(createUserDto)
-    return this.userService.create(createUserDto);
+  register(@Body() registerUser: RegisterUserDto) {
+    return this.userService.register(registerUser);
   }
 
   @Get()
   findAll() {
     return this.userService.findAll();
   }
-  
+
   @Get(':id')
   findOne(@Param('id') id: string) {
     return this.userService.findOne(+id);
