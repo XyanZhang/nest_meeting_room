@@ -19,4 +19,5 @@ export class Role {
         name: 'role_permissions'
     })
     permissions: Permission[] 
+    
 }
