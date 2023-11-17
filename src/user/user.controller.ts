@@ -32,12 +32,11 @@ export class UserController {
     return this.userService.register(registerUser);
   }
 
-  @Get('register-captcha')
+  @Get('/register-captcha')
   async captcha(@Query('address') address: string) {
     const code = Math.random().toString().slice(2, 8);
 
-    await this.redisService.set(`captcha_${address}`, code, 5 * 60); // redis 保存验证码
-
+    await this.redisService.set(`captcha_${address}`, code, 5 * 60); // redis 保存验证码, 5*60 redis过期时间
     await this.emailService.sendMail({
       to: address,
       subject: '注册验证码',
