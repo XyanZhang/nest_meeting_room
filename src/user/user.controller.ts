@@ -16,16 +16,16 @@ import { RegisterUserDto } from './dto/register-user.dto';
 import { EmailService } from '../email/email.service';
 import { RedisService } from '../redis/redis.service';
 import { LoginUserDto } from './dto/login-user.dto';
+import { LoginUserVo } from './vo/login-user.vo';
 
 @Controller('user')
 export class UserController {
-  
   @Inject(EmailService)
   private emailService: EmailService;
 
   @Inject(RedisService)
   private redisService: RedisService;
-  
+
   constructor(private readonly userService: UserService) {}
 
   @Post('/register')
@@ -49,25 +49,42 @@ export class UserController {
   @Post('/login')
   async userLogin(@Body() loginUser: LoginUserDto) {
     let user = await this.userService.login(loginUser);
-    return {
-      state: 'success',
-      data: user
-    }
+    const vo = new LoginUserVo();
+    console.log(user)
+    vo.userInfo = {
+      id: user.id,
+      username: user.username,
+      nickName: user.nickName,
+      email: user.email,
+      phoneNumber: user.phoneNumber,
+      headPic: user.headPic,
+      createTime: user.createTime.getTime(),
+      isFrozen: user.isFrozen,
+      isAdmin: user.isAdmin,
+      roles: user.roles.map((item) => item.name),
+      permissions: user.roles.reduce((arr, item) => { // 将role中的permission 提取到外层，并去重
+        item.permissions.forEach((permission) => {
+          if (arr.indexOf(permission) === -1) {
+            arr.push(permission);
+          }
+        });
+        return arr;
+      }, []),
+    };
+    return vo;
   }
-  
+
   @Post('admin/login')
   async adminLogin(@Body() loginUser: LoginUserDto) {
-    console.log(loginUser)
-    return 'success'
+    console.log(loginUser);
+    return 'success';
   }
 
-  
-  @Get("init-data")
+  @Get('init-data')
   async initData() {
     await this.userService.initData();
-    return 'done'
+    return 'done';
   }
-
 
   @Get()
   findAll() {
