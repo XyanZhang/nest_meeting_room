@@ -9,9 +9,22 @@ import { UserModule } from './user/user.module';
 import { RedisModule } from './redis/redis.module';
 import { EmailModule } from './email/email.module';
 import { ConfigModule, ConfigService } from '@nestjs/config';
+import { JwtModule } from '@nestjs/jwt';
 
 @Module({
   imports: [
+    JwtModule.registerAsync({
+      global: true,
+      useFactory(configService: ConfigService) {
+          return {
+            secret: configService.get('jwt_secret'),
+            signOptions: {
+              expiresIn: configService.get('jwt_access_token_expires_time') // 30 分钟
+            }
+          }
+      },
+      inject: [ConfigService]
+    }),
     ConfigModule.forRoot({
       isGlobal: true,
       envFilePath: 'src/.env'
