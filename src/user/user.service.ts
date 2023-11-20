@@ -68,7 +68,6 @@ export class UserService {
   }
 
   async login(loginUserDto: LoginUserDto, isAdmin: boolean = false) {
-
     const user = await this.userRepository.findOne({
       where: {
         username: loginUserDto.username,
@@ -76,7 +75,7 @@ export class UserService {
       },
       relations: ['roles', 'roles.permissions'],
     });
-    console.log(user)
+    console.log(user);
     if (!user) {
       throw new HttpException('用户不存在', HttpStatus.BAD_REQUEST);
     }
@@ -86,6 +85,30 @@ export class UserService {
     }
 
     return user;
+  }
+
+  async findUserById(userId: number, isAdmin: boolean) {
+    const user = await this.userRepository.findOne({
+      where: {
+        id: userId,
+        isAdmin,
+      },
+      relations: ['roles', 'roles.permissions'], // 关联查询出 roles 和 permissions
+    });
+    return {
+      id: user.id,
+      username: user.username,
+      isAdmin: user.isAdmin,
+      roles: user.roles.map((item) => item.name),
+      permissions: user.roles.reduce((arr, item) => {
+        item.permissions.forEach((permission) => {
+          if (arr.indexOf(permission) === -1) {
+            arr.push(permission);
+          }
+        });
+        return arr;
+      }, []),
+    };
   }
 
   findAll() {

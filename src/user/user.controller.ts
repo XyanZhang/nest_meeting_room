@@ -55,7 +55,7 @@ export class UserController {
     return '发送成功';
   }
 
-  @Post('/login')
+  @Post('login')
   async userLogin(@Body() loginUser: LoginUserDto) {
     let user = await this.userService.login(loginUser);
     const vo = new LoginUserVo();
@@ -114,6 +114,38 @@ export class UserController {
     console.log(loginUser);
     return 'success';
   }
+
+  @Post('refresh')
+  async refresh(@Query('refreshToken') refreshToken: string) {
+    try {
+      const data = this.jwtService.verify(refreshToken);
+
+      const user = await this.userService.findUserById(data.userId, false);
+
+      const access_token = this.jwtService.sign({
+        userId: user.id,
+        username: user.username,
+        roles: user.roles,
+        permissions: user.permissions
+      }, {
+        expiresIn: this.configService.get('jwt_access_token_expires_time') || '30m'
+      });
+
+      const refresh_token = this.jwtService.sign({
+        userId: user.id
+      }, {
+        expiresIn: this.configService.get('jwt_refresh_token_expres_time') || '7d'
+      });
+
+      return {
+        access_token,
+        refresh_token
+      }
+    } catch(e) {
+      throw new UnauthorizedException('token 已失效，请重新登录');
+    }
+  }
+
 
   @Get('init-data')
   async initData() {
