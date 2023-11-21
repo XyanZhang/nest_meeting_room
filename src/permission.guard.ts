@@ -14,6 +14,7 @@ export class PermissionGuard implements CanActivate {
   ): boolean | Promise<boolean> | Observable<boolean> {
     const request: Request = context.switchToHttp().getRequest();
 
+    console.log(request.user)
     if(!request.user) {
       return true;
     }
@@ -24,6 +25,11 @@ export class PermissionGuard implements CanActivate {
       context.getClass(),
       context.getHandler()
     ])
+    
+    if(!requiredPermissions) {
+      return true;
+    }
+    
     for(let i = 0; i < requiredPermissions.length; i++) {
       const curPermission = requiredPermissions[i];
       const found = permissions.find(item => item.code === curPermission);
