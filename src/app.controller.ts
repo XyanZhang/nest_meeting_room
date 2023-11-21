@@ -16,6 +16,7 @@ export class AppController {
   }
   @Get('need-login')
   @SetMetadata('require-login', true)
+  @SetMetadata('require-permission', ['ddd'])
   needLogin(): string {
     return 'need login'
   }
