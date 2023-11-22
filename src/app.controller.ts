@@ -17,7 +17,7 @@ export class AppController {
   }
   @Get('need-login')
   @RequireLogin()
-  @RequirePermission('ddd') // ccc
+  @RequirePermission('ccc') // ccc
   needLogin(@UserInfo('username') username: string, @UserInfo() userInfo) {
     return 'need login'
   }
