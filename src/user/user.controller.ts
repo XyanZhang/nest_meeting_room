@@ -124,79 +124,129 @@ export class UserController {
 
       const user = await this.userService.findUserById(data.userId, false);
 
-      const access_token = this.jwtService.sign({
-        userId: user.id,
-        username: user.username,
-        roles: user.roles,
-        permissions: user.permissions
-      }, {
-        expiresIn: this.configService.get('jwt_access_token_expires_time') || '30m'
-      });
+      const access_token = this.jwtService.sign(
+        {
+          userId: user.id,
+          username: user.username,
+          roles: user.roles,
+          permissions: user.permissions,
+        },
+        {
+          expiresIn:
+            this.configService.get('jwt_access_token_expires_time') || '30m',
+        },
+      );
 
-      const refresh_token = this.jwtService.sign({
-        userId: user.id
-      }, {
-        expiresIn: this.configService.get('jwt_refresh_token_expres_time') || '7d'
-      });
+      const refresh_token = this.jwtService.sign(
+        {
+          userId: user.id,
+        },
+        {
+          expiresIn:
+            this.configService.get('jwt_refresh_token_expres_time') || '7d',
+        },
+      );
 
       return {
         access_token,
-        refresh_token
-      }
-    } catch(e) {
+        refresh_token,
+      };
+    } catch (e) {
       throw new UnauthorizedException('token 已失效，请重新登录');
     }
   }
 
   @Get('admin/refresh')
   async adminRefresh(@Query('refreshToken') refreshToken: string) {
-      try {
-        const data = this.jwtService.verify(refreshToken);
+    try {
+      const data = this.jwtService.verify(refreshToken);
 
-        const user = await this.userService.findUserById(data.userId, true);
+      const user = await this.userService.findUserById(data.userId, true);
 
-        const access_token = this.jwtService.sign({
+      const access_token = this.jwtService.sign(
+        {
           userId: user.id,
           username: user.username,
           roles: user.roles,
-          permissions: user.permissions
-        }, {
-          expiresIn: this.configService.get('jwt_access_token_expires_time') || '30m'
-        });
+          permissions: user.permissions,
+        },
+        {
+          expiresIn:
+            this.configService.get('jwt_access_token_expires_time') || '30m',
+        },
+      );
 
-        const refresh_token = this.jwtService.sign({
-          userId: user.id
-        }, {
-          expiresIn: this.configService.get('jwt_refresh_token_expres_time') || '7d'
-        });
+      const refresh_token = this.jwtService.sign(
+        {
+          userId: user.id,
+        },
+        {
+          expiresIn:
+            this.configService.get('jwt_refresh_token_expres_time') || '7d',
+        },
+      );
 
-        return {
-          access_token,
-          refresh_token
-        }
-      } catch(e) {
-        throw new UnauthorizedException('token 已失效，请重新登录');
-      }
+      return {
+        access_token,
+        refresh_token,
+      };
+    } catch (e) {
+      throw new UnauthorizedException('token 已失效，请重新登录');
+    }
   }
 
   @Post(['update_password', 'admin/update_password'])
   @RequireLogin()
-  async updatePassword(@UserInfo('userId') userId: number, @Body() passwordDto: UpdateUserPasswordDto) {
+  async updatePassword(
+    @UserInfo('userId') userId: number,
+    @Body() passwordDto: UpdateUserPasswordDto,
+  ) {
     return await this.userService.updatePassword(userId, passwordDto);
   }
 
   @Get('update_password/captcha')
   async updatePasswordCaptcha(@Query('address') address: string) {
-      const code = Math.random().toString().slice(2,8);
+    const code = Math.random().toString().slice(2, 8);
 
-      await this.redisService.set(`update_password_captcha_${address}`, code, 10 * 60);
+    await this.redisService.set(
+      `update_password_captcha_${address}`,
+      code,
+      10 * 60,
+    );
 
-      await this.emailService.sendMail({
-        to: address,
-        subject: '更改密码验证码',
-        html: `<p>你的更改密码验证码是 ${code}</p>`
-      });
-      return '发送成功';
+    await this.emailService.sendMail({
+      to: address,
+      subject: '更改密码验证码',
+      html: `<p>你的更改密码验证码是 ${code}</p>`,
+    });
+    return '发送成功';
+  }
+
+  @Post(['update', 'admin/update'])
+  @RequireLogin()
+  async update(
+    @UserInfo('userId') userId: number,
+    @Body() updateUserDto: UpdateUserDto,
+  ) {
+    return await this.userService.update(userId, updateUserDto);
+  }
+
+  @Get('update/captcha')
+  async updateCaptcha(@Query('address') address: string) {
+    const code = Math.random().toString().slice(2, 8);
+
+    await this.redisService.set(
+      `update_user_captcha_${address}`,
+      code,
+      10 * 60,
+    );
+
+    await this.emailService.sendMail({
+      to: address,
+      subject: '更改用户信息验证码',
+      html: `<p>你的验证码是 ${code}</p>`,
+    });
+    return '发送成功';
   }
 
   @Get('init-data')
@@ -213,11 +263,6 @@ export class UserController {
   @Get(':id')
   findOne(@Param('id') id: string) {
     return this.userService.findOne(+id);
-  }
-
-  @Patch(':id')
-  update(@Param('id') id: string, @Body() updateUserDto: UpdateUserDto) {
-    return this.userService.update(+id, updateUserDto);
   }
 
   @Delete(':id')
