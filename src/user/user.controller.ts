@@ -9,6 +9,9 @@ import {
   Query,
   Inject,
   UnauthorizedException,
+  ParseIntPipe,
+  BadRequestException,
+  DefaultValuePipe,
 } from '@nestjs/common';
 import { UserService } from './user.service';
 import { CreateUserDto } from './dto/create-user.dto';
@@ -22,6 +25,7 @@ import { JwtService } from '@nestjs/jwt';
 import { ConfigService } from '@nestjs/config';
 import { UpdateUserPasswordDto } from './dto/update-user-password.dto';
 import { RequireLogin, UserInfo } from 'src/custom.decorator';
+import { generateParseIntPipe } from 'src/utils';
 
 @Controller('user')
 export class UserController {
@@ -248,6 +252,24 @@ export class UserController {
     });
     return '发送成功';
   }
+
+  @Get('freeze')
+  async freeze(@Query('id') userId: number) {
+    await this.userService.freezeUserById(userId);
+    return 'success';
+  }
+  @Post('list')
+  async list(
+    @Query('pageNo', new DefaultValuePipe(1), generateParseIntPipe('pageNo')) pageNo: number, 
+    @Query('pageSize' ,new DefaultValuePipe(10), generateParseIntPipe('pageSize')) pageSize: number,
+    @Query('username') username: string,
+    @Query('nickName') nickName: string,
+    @Query('email') email: string
+  ) {
+    // 没有传 pageNo 和 pageSize 的时候, 设置个默认值 DefaultValuePipe
+    return await this.userService.findUsersByPage(username, nickName, email, pageNo, pageSize);
+  }
+
 
   @Get('init-data')
   async initData() {
