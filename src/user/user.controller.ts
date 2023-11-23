@@ -113,6 +113,7 @@ export class UserController {
     );
 
     return vo;
+  
   }
 
   @Post('admin/login')
@@ -266,6 +267,7 @@ export class UserController {
     @Query('nickName') nickName: string,
     @Query('email') email: string
   ) {
+    console.log(nickName)
     // 没有传 pageNo 和 pageSize 的时候, 设置个默认值 DefaultValuePipe
     return await this.userService.findUsersByPage(username, nickName, email, pageNo, pageSize);
   }

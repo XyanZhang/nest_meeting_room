@@ -185,6 +185,7 @@ export class UserService {
       ], // 指定查询的字段
       skip: skipCount,
       take: pageSize,
+      where: condition
     });
 
     return {
