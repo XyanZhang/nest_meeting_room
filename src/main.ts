@@ -11,7 +11,7 @@ import { CustomExceptionFilter } from './custom-exception.filter';
 async function bootstrap() {
   const app = await NestFactory.create(AppModule);
 
-  app.useGlobalPipes(new ValidationPipe());
+  app.useGlobalPipes(new ValidationPipe()); // 声明了参数的类型为 dto 类，pipe 里拿到这个类，把参数对象通过 class-transformer 转换为 dto 类的对象，之后再用 class-validator 包来对这个对象做验证。
   app.useGlobalInterceptors(new FormatResponseInterceptor())
   app.useGlobalInterceptors(new InvokeRecordInterceptor())
   app.useGlobalFilters(new UnloginFilter())
